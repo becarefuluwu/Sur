@@ -864,10 +864,9 @@ Tabs.Farm:AddToggle("AutoFarm boss", {
 local standDropdown = Tabs.Main:AddDropdown("standDropdown", {
     Title = "Stand",
     Values = {
-        "Cream", "Sc", "Hg", "Sf", "Sp", "Kq", "Aerosmith", "Spso", "Cd", "The emperor",
-        "Stone free", "Th", "Saw", "Mr", "Twau", "Purple smoke", "Ws", "Diver down",
-        "Tw", "Wr", "Ge", "Kc", "D4c", "Pm", "Sc ova", "Tw ova", "Jsp", "Sp ova",
-        "Ta1", "Dtw"
+    
+        "TW","PM", "SCOVA", "TWOVAOH", "JotarosStarplatinum", "StarPlatinumOVA", "StabPlatinum", "PutridWhine",
+        "TA1", "DTW", "SolSpirit", "SolPlatina", "SolPlatinaTW", "SolPlatinaOVA", "SoulSpiritOVA", "SolSpirit,Obscura",
     },
     Multi = true,
     Search = true,
@@ -880,7 +879,7 @@ local standDropdown = Tabs.Main:AddDropdown("standDropdown", {
 local attrDropdown = Tabs.Main:AddDropdown("attrDropdown", {
     Title = "Attribute",
     Values = {
-        "Ascend", "Awakened", "Berserk", "Bloodline", "Control", "Drive", "Edge", "Execution", "Fighter", "Flow", "Focused", "Fortress", "Glass", "Guardian", "Instinct", "LastStand", "Limit", "Normal", "Overload", "Rage", "Shield", "Slayer", "Titan"
+     "Godly", "Daemon", "Invisible", "Tragic", "Scourge", "Glass Cannon", "Glass cannon", "Hacker", "Legendary",
     },
     Multi = true,
     Default = {"Normal"},
