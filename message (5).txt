@@ -1,0 +1,81 @@
+local webhookURL = "YOUR_DISCORD_WEBHOOK_URL_HERE" -- นำลิงก์ Discord Webhook มาใส่ตรงนี้
+
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
+
+local dataFolder = player:WaitForChild("Data", 5)
+if not dataFolder then
+    warn("[Webhook Error] ไม่พบโฟลเดอร์ Data ของผู้เล่น")
+    return
+end
+
+-- ค้นหาออบเจกต์เก็บค่าของ Stand (ตรวจทั้งชื่อ Attri และ Attribute)
+local attrObj = dataFolder:FindFirstChild("Attri") or dataFolder:FindFirstChild("Attribute")
+if not attrObj then
+    warn("[Webhook Error] ไม่พบออบเจกต์ Attri หรือ Attribute")
+    return
+end
+
+-- รายชื่อ Stand ที่ถ้าหากผู้เล่นได้ครอบครองแล้วจะให้ส่งแจ้งเตือนเข้า Discord
+local standList = {
+    "Pm",
+    "Sc ova",
+    "Sol Platina",
+    "StabPlatinum",
+    "Sol Spirit ova",
+    "Sol Platina oh",
+    "Sol platina ova",
+    "Sol platina tw",
+    "Putrid Whine",
+    "Dtw"
+}
+
+-- ฟังก์ชันสำหรับส่ง Webhook ผ่าน HTTP Request ของ Executor
+local function sendWebhook(url, standName)
+    -- ตรวจสอบและเลือกฟังก์ชันส่ง HTTP request ของ Executor ที่พร้อมใช้งาน
+    local request = (syn and syn.request) or (http and http.request) or http_request or request
+
+    if not request then
+        warn("[Webhook Error] Executor ของคุณไม่รองรับ HTTP Request (ไม่พบฟังก์ชัน request)")
+        return
+    end
+
+    -- แปลงข้อมูล payload เป็น JSON
+    local payload = HttpService:JSONEncode({
+        content = "**" .. player.Name .. "** has **" .. standName .. "**"
+    })
+
+    -- ใช้ pcall เพื่อป้องกันไม่ให้สคริปต์หยุดทำงานหากเกิดข้อผิดพลาดในการส่ง
+    local success, response = pcall(function()
+        return request({
+            Url = url,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = payload
+        })
+    end)
+
+    if success then
+        print("[Webhook Success] ส่งรายงานเข้า Discord สำเร็จ! (พบ: " .. standName .. ")")
+    else
+        warn("[Webhook Error] เกิดข้อผิดพลาดในการส่ง Webhook: " .. tostring(response))
+    end
+end
+
+-- ฟังก์ชันสำหรับตรวจสอบค่าปัจจุบันของ Attribute
+local function checkAttribute()
+    local currentValue = attrObj.Value
+    if table.find(standList, currentValue) then
+        sendWebhook(webhookURL, currentValue)
+    end
+end
+
+while task.wait(2) do
+    checkAttribute()
+end
+
+-- 2. ตั้งระบบตรวจจับเมื่อมีการเปลี่ยนค่า Attribute ในอนาคต (เช่น เมื่อผู้เล่นทำการสุ่ม/เปลี่ยนสแตนด์)
+attrObj:GetPropertyChangedSignal("Value"):Connect(checkAttribute)
