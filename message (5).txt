@@ -1,4 +1,4 @@
-local webhookURL = "YOUR_DISCORD_WEBHOOK_URL_HERE" -- นำลิงก์ Discord Webhook มาใส่ตรงนี้
+local webhookURL = "https://discord.com/api/webhooks/1512490008186191922/zxsvk_oaXt-Vi1oC2dT6h7On-aj1-A6NFWNzJBy8Sy6Hbf4jSNcrJtFUTpd6BMf5ISVP" -- นำลิงก์ Discord Webhook มาใส่ตรงนี้
 
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
