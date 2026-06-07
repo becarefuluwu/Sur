@@ -1,0 +1,85 @@
+-- สร้าง ScreenGui และปุ่มเปิด/ปิด UI
+local player = game.Players.LocalPlayer
+local pgui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoLairGui"
+screenGui.Parent = pgui
+screenGui.ResetOnSpawn = false
+
+-- ปุ่มเปิด/ปิด UI หลัก (Toggle Button)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 100, 0, 40)
+toggleBtn.Position = UDim2.new(0, 20, 0, 20)
+toggleBtn.Text = "เปิด/ปิด UI"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Parent = screenGui
+
+-- หน้าต่างเมนูหลัก
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 200, 0, 150)
+mainFrame.Position = UDim2.new(0, 20, 0, 70)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Visible = true
+mainFrame.Parent = screenGui
+
+-- ปุ่มสั่งทำงาน Auto Lair
+local autoBtn = Instance.new("TextButton")
+autoBtn.Size = UDim2.new(0, 160, 0, 50)
+autoBtn.Position = UDim2.new(0, 20, 0, 50)
+autoBtn.Text = "Auto lair"
+autoBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+autoBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoBtn.Font = Enum.Font.SourceSansBold
+autoBtn.TextSize = 20
+autoBtn.Parent = mainFrame
+
+-- ระบบเปิด/ปิดหน้าต่างเมนู
+toggleBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
+-- ฟังก์ชันหลักเมื่อกดปุ่ม Auto lair
+autoBtn.MouseButton1Click:Connect(function()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+    
+    -- 1. วาร์ปไปยังพิกัด CFrame ที่กำหนด (รวม Rotation Matrix)
+    local targetCFrame = CFrame.new(
+        35.6563263, 65.7172775, -24.293869, 
+        0.0384440422, 0, 0.999260724, 
+        0, 1, 0, 
+        -0.999260724, 0, 0.0384440422
+    )
+    hrp.CFrame = targetCFrame
+    task.wait(0.5) -- รอให้ตัวละครวาร์ปเสร็จสมบูรณ์
+    
+    -- 2. คุยกับ NPC "fidydoid1" อัตโนมัติ
+    -- ค้นหา NPC ใน Workspace (เปลี่ยนตำแหน่งโฟลเดอร์ได้ตามความเหมาะสมของเกม)
+    local npc = workspace:FindFirstChild("fidydoid1") or workspace.NPCs:FindFirstChild("fidydoid1")
+    if npc and npc:FindFirstChild("HumanoidRootPart") then
+        -- วิธีที่ 1: เดิน/วาร์ปไปใกล้ๆ แล้วเปิดใช้งาน ProximityPrompt (ถ้าเกมใช้ระบบนี้)
+        local prompt = npc:FindFirstChildWhichIsA("ProximityPrompt", true)
+        if prompt then
+            fireproximityprompt(prompt)
+        end
+        
+        -- วิธีที่ 2: จำลองการคลิก Dialog (ถ้าเกมใช้ระบบ Dialog ของ Roblox)
+        local dialog = npc:FindFirstChildWhichIsA("Dialog", true)
+        if dialog then
+            player TalkToNPC(dialog) -- ฟังก์ชันภายในของ Roblox Dialog
+        end
+    else
+        warn("ไม่พบ NPC ชื่อ fidydoid1")
+    end
+    task.wait(1) -- รอสคริปต์คุยกับ NPC ทำงานเสร็จ
+    
+    -- 3. วาร์ปไปหา "Boss" ทันที
+    local boss = workspace:FindFirstChild("Boss") or workspace.Enemies:FindFirstChild("Boss")
+    if boss and boss:FindFirstChild("HumanoidRootPart") then
+        hrp.CFrame = boss.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0) -- วาร์ปไปอยู่เหนือหัวบอสเล็กน้อยเพื่อความปลอดภัย
+    else
+        warn("ไม่พบบอสชื่อ Boss")
+    end
+end)
