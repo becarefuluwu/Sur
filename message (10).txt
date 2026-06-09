@@ -1,0 +1,74 @@
+local webhookURL = "https://discordapp.com/api/webhooks/1246527848836239492/EwSERK1U7ByUG4HMGDd-1PCwPzePZ-xng_DzFDBLwXe5d7FZ16tIcw8rpoLH1jWhwWa7" -- นำลิงก์ Discord Webhook มาใส่ตรงนี้
+
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local player = Players.LocalPlayer
+
+
+-- ค้นหาออบเจกต์เก็บค่าของ Stand (ตรวจทั้งชื่อ Attri และ Attribute)
+local attrObj = game:GetService("Players").LocalPlayer.Data.Attri
+local standObj = player.Data:FindFirstChild("Stand")
+
+
+-- รายชื่อ Stand ที่ถ้าหากผู้เล่นได้ครอบครองแล้วจะให้ส่งแจ้งเตือนเข้า Discord
+local standList = {
+    "Pm",
+    "Sc ova",
+    "Sol Platina",
+    "StabPlatinum",
+    "Sol Spirit ova",
+    "Sol Platina oh",
+    "Sol platina ova",
+    "Sol platina tw",
+    "Putrid Whine",
+    "Dtw"
+}
+
+-- ฟังก์ชันสำหรับส่ง Webhook ผ่าน HTTP Request ของ Executor
+local function sendWebhook(url, standName,attr)
+    -- ตรวจสอบและเลือกฟังก์ชันส่ง HTTP request ของ Executor ที่พร้อมใช้งาน
+    local request = (syn and syn.request) or (http and http.request) or http_request or request
+
+    if not request then
+        warn("[Webhook Error] Executor ของคุณไม่รองรับ HTTP Request (ไม่พบฟังก์ชัน request)")
+        return
+    end
+
+    -- แปลงข้อมูล payload เป็น JSON
+    local payload = HttpService:JSONEncode({
+        content = "**player:** " .. player.Name .. " | **stand:** " .. standName .. " | **attribute:** " .. attr .. ""
+    })
+
+    -- ใช้ pcall เพื่อป้องกันไม่ให้สคริปต์หยุดทำงานหากเกิดข้อผิดพลาดในการส่ง
+    local success, response = pcall(function()
+        return request({
+            Url = url,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = payload
+        })
+    end)
+
+    if success then
+        print("[Webhook Success] ส่งรายงานเข้า Discord สำเร็จ! (พบ: " .. standName .. ")")
+    else
+        warn("[Webhook Error] เกิดข้อผิดพลาดในการส่ง Webhook: " .. tostring(response))
+    end
+end
+
+
+local function checkAttribute()
+    local currentValue = standObj.Value
+    local attr = attrObj.Value
+    if table.find(standList, currentValue) then
+        sendWebhook(webhookURL, currentValue,attr)
+    end
+end
+
+while task.wait(2) do
+    checkAttribute()
+    
+    standObj:GetPropertyChangedSignal("Value"):Connect(checkAttribute)
+end
